@@ -4,20 +4,26 @@
 from tkinter import filedialog
 
 
-def select_file():
-    filepath = filedialog.askopenfilename()
-    print(filepath)
+class dataProcess:
+    def __init__(self):
+        self.filepath = ""
 
-    return filepath
+    def select_file(self):
+        self.filepath = filedialog.askopenfilename()
+        print(self.filepath)
+
+        #return filepath
+
+    def open_file(self, filepath):
+        file = open(self.filepath, "r")
+        for line in file:
+            print(line)
+
+        file.close()
 
 
-def open_file(filepath):
-    file = open(filepath, "r")
-    for line in file:
-        print(line)
-
-    file.close()
-
-
-filepath = select_file()
-open_file(filepath)
+if __name__ == "__main__":
+    test = dataProcess()
+    #test.select_file()
+    #filepath = select_file()
+    #open_file(filepath)
