@@ -3,24 +3,77 @@ from tkinter import filedialog
 import os
 
 
-class FileReader:
+class DataProcessor:
+    def __init__(self):
+        self.file_data = None
+
     @staticmethod
     def read_file(filepath):
         if filepath:
             with open(filepath, "r") as file:
                 return file.read()
 
-
-class DataProcessor:
     def process_file_data(self, file_data):
-        print("Processing file data:", file_data)
+        if file_data:
+            accession_code = []
+            species = []
+            sequences = ""
+            read = False
+
+            lines = file_data.split("\n")
+            for line in lines:
+                if line.startswith("AC"):
+                    accession_code.append(line.strip("\n"))
+                if line.startswith("OS"):
+                    species.append(line.strip("\n"))
+                if line.startswith("SQ"):
+                    read = True
+                if line.startswith("//"):
+                    read = False
+                if read:
+                    sequences += line
+
+            return accession_code, species, sequences
+
+    def seperate_header_seq(self, sequences):
+        entries = sequences.split("SQ   SEQUENCE")[1:]
+
+        result_dict = {}
+
+        for entry in entries:
+            lines = entry.strip().split('\n')
+
+            # Extracting header and sequence
+            header = lines[0].strip()
+            sequence = ''.join(lines[1:]).replace(' ', '')
+
+            # Storing in dictionary
+            result_dict[header] = sequence
+        print(result_dict.keys())
+
+        return result_dict
+
+
+class Data:
+    def __init__(self, result_dict):
+        self.result_dict = result_dict
+
+
+class Species(Data):
+    def __init__(self, result_dict, organisme):
+        super().__init__(result_dict)
+        self.organisme = organisme
+
+
+class ID(Data):
+    pass
 
 
 class GUI:
     # De constructor
     def __init__(self):
+        self.file_data = None
         self.filepath = None
-        self.data_processor = data_processor
 
     def create_GUI(self):
         # Create the main window
@@ -53,15 +106,13 @@ class GUI:
         self.textfield.insert(0, filename)
 
         # Call the seperated FileReader class and pass the data to the DataProcessor class
-        file_data = FileReader.read_file(self.filepath)
-        self.data_processor.process_file_data(file_data)
-
-        return self.filepath
+        self.file_data = DataProcessor.read_file(self.filepath)
+        accession_code, species, sequences = DataProcessor().process_file_data(self.file_data)
+        result_dict = DataProcessor().seperate_header_seq(sequences)
 
 
 # Create an instance of the GUI class. ...
 if __name__ == "__main__":
-    data_processor = DataProcessor()
     test = GUI()
     test.create_GUI()
     test.main_window.mainloop()
